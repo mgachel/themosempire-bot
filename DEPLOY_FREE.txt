@@ -1,0 +1,111 @@
+# ============================================
+# THEMOSEMPIRE FX TELEGRAM BOT - DEPLOYMENT GUIDE
+# ============================================
+
+## 🚀 FREE 24/7 DEPLOYMENT OPTIONS
+
+### OPTION 1: RENDER.COM (RECOMMENDED - Easiest)
+
+1. **Create Account**
+   - Go to https://render.com
+   - Sign up with GitHub (recommended)
+
+2. **Push Code to GitHub**
+   - Create a new repository on GitHub
+   - Upload the telegram-bot folder contents
+
+3. **Deploy on Render**
+   - Click "New" → "Web Service"
+   - Connect your GitHub repository
+   - Settings:
+     - Name: themosempire-fx-bot
+     - Runtime: Node
+     - Build Command: npm install
+     - Start Command: node bot.js
+   
+4. **Add Environment Variables**
+   In Render dashboard, add these:
+   ```
+   TELEGRAM_BOT_TOKEN=your_bot_token_from_botfather
+   PAYSTACK_SECRET_KEY=sk_test_00368579d28a59477f6ef54414fbe65602adbb97
+   ADMIN_TELEGRAM_ID=your_telegram_user_id
+   ```
+
+5. Click "Create Web Service" - Done! ✅
+
+---
+
+### OPTION 2: RAILWAY.APP (Also Free)
+
+1. Go to https://railway.app
+2. Sign up with GitHub
+3. Click "New Project" → "Deploy from GitHub repo"
+4. Select your repository
+5. Add environment variables
+6. Deploy!
+
+---
+
+### OPTION 3: KOYEB.COM (Free Tier)
+
+1. Go to https://koyeb.com
+2. Sign up
+3. Create new service from GitHub
+4. Configure and deploy
+
+---
+
+### OPTION 4: CYCLIC.SH (Totally Free)
+
+1. Go to https://cyclic.sh
+2. Sign up with GitHub
+3. Deploy from repository
+4. Add environment variables
+
+---
+
+## 📱 FIRST: CREATE YOUR BOT WITH BOTFATHER
+
+Before deploying, you need a bot token:
+
+1. Open Telegram and search for @BotFather
+2. Send: /newbot
+3. Choose a name: Themosempire Fx Academy
+4. Choose a username: ThemosempireFxBot (must end with 'bot')
+5. Copy the token BotFather gives you
+6. Use this token in your environment variables
+
+---
+
+## 🔧 GET YOUR TELEGRAM USER ID (For Admin)
+
+1. Search for @userinfobot on Telegram
+2. Start the bot
+3. It will show your User ID
+4. Use this as ADMIN_TELEGRAM_ID
+
+---
+
+## 📁 FILES TO UPLOAD TO GITHUB
+
+Upload these files from telegram-bot folder:
+- bot.js
+- package.json
+- Procfile
+- .env.example (NOT .env - keep that private!)
+
+---
+
+## ⚡ QUICK DEPLOY STEPS (Render.com)
+
+1. Create GitHub repo
+2. Upload bot files
+3. Go to render.com → New → Web Service
+4. Connect GitHub
+5. Add environment variables:
+   - TELEGRAM_BOT_TOKEN
+   - PAYSTACK_SECRET_KEY  
+   - ADMIN_TELEGRAM_ID
+6. Deploy!
+
+Your bot will be live 24/7 for FREE! 🎉

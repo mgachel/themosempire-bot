@@ -5,17 +5,19 @@
  * Founded by Ayarisi Amos
  * 
  * Features:
- * - Course enrollment & payments
+ * - AUTOMATED Paystack payments
+ * - Auto group access after payment
  * - Subscription management with auto-expiry
  * - Auto-removal from groups when expired
  * - Renewal reminders (3 days & 1 day before)
- * - Admin panel for payment approval
  * ============================================
  */
 
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
+const axios = require('axios');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -24,9 +26,11 @@ const path = require('path');
 // ============================================
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || 'sk_test_00368579d28a59477f6ef54414fbe65602adbb97';
+const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY || 'pk_test_3c4130cf2ffa483ade57eddac4504bc706e52bac';
 const ADMIN_TELEGRAM_ID = process.env.ADMIN_TELEGRAM_ID || '6330862723';
 const PORT = process.env.PORT || 3000;
+const WEBHOOK_URL = process.env.WEBHOOK_URL || ''; // Your deployed URL e.g., https://your-app.onrender.com
 
 // Telegram Group IDs (Add bot as admin to groups, then get group IDs)
 // To get group ID: Add bot to group, send a message, check bot updates
@@ -552,7 +556,37 @@ bot.on('callback_query', async (query) => {
     else if (data === 'main_menu') showMainMenu(chatId);
     else if (data.startsWith('faq_')) showFAQAnswer(chatId, parseInt(data.replace('faq_', '')));
     else if (data.startsWith('pay_')) initPayment(chatId, data.replace('pay_', ''), query.from);
-    else if (data.startsWith('confirm_')) confirmPayment(chatId, data.replace('confirm_', ''), query.from);
+    else if (data.startsWith('paystack_')) generatePaystackLink(chatId, data.replace('paystack_', ''), query.from);
+    else if (data.startsWith('manual_')) showManualPayment(chatId, data.replace('manual_', ''), query.from);
+    else if (data.startsWith('confirm_manual_')) confirmManualPayment(chatId, data.replace('confirm_manual_', ''), query.from);
+    else if (data.startsWith('verify_')) verifyPaystackPayment(chatId, data.replace('verify_', ''));
+});
+
+// Handle email input for Paystack payment
+bot.on('message', async (msg) => {
+    const chatId = msg.chat.id;
+    
+    // Check if this is a reply to email request
+    if (msg.reply_to_message && db.pendingPayments?.[chatId]) {
+        const email = msg.text?.trim();
+        
+        // Basic email validation
+        if (email && email.includes('@') && email.includes('.')) {
+            // Save email
+            db.users[chatId] = db.users[chatId] || {};
+            db.users[chatId].email = email;
+            saveData();
+            
+            // Process payment
+            const pending = db.pendingPayments[chatId];
+            delete db.pendingPayments[chatId];
+            saveData();
+            
+            await createPaystackPayment(chatId, pending.planId, email, pending.user);
+        } else {
+            bot.sendMessage(chatId, '❌ Invalid email. Please enter a valid email address:');
+        }
+    }
 });
 
 // ============================================
@@ -746,10 +780,10 @@ function showContact(chatId) {
 }
 
 // ============================================
-// PAYMENT FUNCTIONS
+// PAYMENT FUNCTIONS - PAYSTACK INTEGRATION
 // ============================================
 
-function initPayment(chatId, planId, user) {
+async function initPayment(chatId, planId, user) {
     const plan = PLANS[planId];
     if (!plan) return bot.sendMessage(chatId, '❌ Invalid plan');
     
@@ -793,23 +827,20 @@ Join the group below! 👇
         return bot.sendMessage(chatId, '✅ You already have Lifetime Access!');
     }
     
+    // Show payment options
     const message = `
 💳 *Pay for ${plan.name}*
 
 *Amount:* ₵${plan.amount.toLocaleString()}
 *Duration:* ${plan.duration}
 
-*Payment Methods:*
-📱 MoMo: 0596688947 (Ayarisi Amos)
-🏦 Bank: Stanbic - 9040010942548
-
-After payment, click "I Have Paid" ✅
+Choose how to pay:
     `;
     
     const keyboard = {
         inline_keyboard: [
-            [{ text: '✅ I Have Paid', callback_data: `confirm_${planId}` }],
-            [{ text: '💬 Pay via WhatsApp', url: `https://wa.me/233596688947?text=Hi, paying for ${plan.name} (₵${plan.amount})` }],
+            [{ text: '💳 Pay with Paystack (Card/MoMo)', callback_data: `paystack_${planId}` }],
+            [{ text: '📱 Manual Payment (MoMo/Bank)', callback_data: `manual_${planId}` }],
             [{ text: '⬅️ Back', callback_data: 'view_pricing' }]
         ]
     };
@@ -817,7 +848,251 @@ After payment, click "I Have Paid" ✅
     bot.sendMessage(chatId, message, { parse_mode: 'Markdown', reply_markup: keyboard });
 }
 
-function confirmPayment(chatId, planId, user) {
+// Generate Paystack payment link
+async function generatePaystackLink(chatId, planId, user) {
+    const plan = PLANS[planId];
+    
+    // Check if user has email stored, if not ask for it
+    const userData = db.users[chatId];
+    
+    if (!userData?.email) {
+        // Store pending payment
+        db.pendingPayments = db.pendingPayments || {};
+        db.pendingPayments[chatId] = { planId, user };
+        saveData();
+        
+        bot.sendMessage(chatId, `📧 Please enter your email address to proceed with payment:`, {
+            reply_markup: { force_reply: true }
+        });
+        return;
+    }
+    
+    await createPaystackPayment(chatId, planId, userData.email, user);
+}
+
+// Create Paystack payment
+async function createPaystackPayment(chatId, planId, email, user) {
+    const plan = PLANS[planId];
+    const reference = `TFX_${chatId}_${planId}_${Date.now()}`;
+    
+    try {
+        // Initialize Paystack transaction
+        const response = await axios.post('https://api.paystack.co/transaction/initialize', {
+            email: email,
+            amount: plan.amount * 100, // Convert to pesewas
+            reference: reference,
+            currency: 'GHS',
+            callback_url: WEBHOOK_URL ? `${WEBHOOK_URL}/payment/callback` : undefined,
+            metadata: {
+                telegram_user_id: chatId.toString(),
+                plan_id: planId,
+                plan_name: plan.name,
+                user_first_name: user.first_name,
+                username: user.username || ''
+            }
+        }, {
+            headers: {
+                'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.data.status) {
+            const paymentUrl = response.data.data.authorization_url;
+            
+            // Store pending payment reference
+            db.pendingPaystackPayments = db.pendingPaystackPayments || {};
+            db.pendingPaystackPayments[reference] = {
+                chatId,
+                planId,
+                email,
+                user,
+                createdAt: new Date().toISOString()
+            };
+            saveData();
+            
+            const message = `
+💳 *Pay for ${plan.name}*
+
+*Amount:* ₵${plan.amount.toLocaleString()}
+*Email:* ${email}
+
+Click the button below to pay securely with Paystack (Card or Mobile Money):
+            `;
+            
+            bot.sendMessage(chatId, message, {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '💳 Pay Now - ₵' + plan.amount.toLocaleString(), url: paymentUrl }],
+                        [{ text: '✅ I Have Paid', callback_data: `verify_${reference}` }],
+                        [{ text: '⬅️ Back', callback_data: 'view_pricing' }]
+                    ]
+                }
+            });
+        } else {
+            throw new Error('Failed to initialize payment');
+        }
+    } catch (error) {
+        console.error('Paystack error:', error.response?.data || error.message);
+        bot.sendMessage(chatId, `❌ Error creating payment link. Please try manual payment or contact support.`, {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '📱 Manual Payment', callback_data: `manual_${planId}` }],
+                    [{ text: '📞 Contact Support', callback_data: 'contact' }]
+                ]
+            }
+        });
+    }
+}
+
+// Verify Paystack payment
+async function verifyPaystackPayment(chatId, reference) {
+    try {
+        const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
+            headers: {
+                'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`
+            }
+        });
+        
+        const data = response.data.data;
+        
+        if (data.status === 'success') {
+            // Payment successful!
+            const pendingPayment = db.pendingPaystackPayments?.[reference];
+            
+            if (pendingPayment) {
+                await processSuccessfulPayment(
+                    pendingPayment.chatId,
+                    pendingPayment.planId,
+                    reference,
+                    pendingPayment.user
+                );
+                
+                // Clean up
+                delete db.pendingPaystackPayments[reference];
+                saveData();
+            }
+            return true;
+        } else if (data.status === 'pending') {
+            bot.sendMessage(chatId, `⏳ Payment is still pending. Please complete the payment or wait a moment and try again.`, {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🔄 Check Again', callback_data: `verify_${reference}` }]
+                    ]
+                }
+            });
+            return false;
+        } else {
+            bot.sendMessage(chatId, `❌ Payment not found or failed. Please try again or contact support.`, {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🔄 Try Again', callback_data: 'view_pricing' }],
+                        [{ text: '📞 Contact Support', callback_data: 'contact' }]
+                    ]
+                }
+            });
+            return false;
+        }
+    } catch (error) {
+        console.error('Verify error:', error.response?.data || error.message);
+        bot.sendMessage(chatId, `❌ Error verifying payment. Please contact support with reference: \`${reference}\``, {
+            parse_mode: 'Markdown'
+        });
+        return false;
+    }
+}
+
+// Process successful payment - give access
+async function processSuccessfulPayment(chatId, planId, reference, user) {
+    const plan = PLANS[planId];
+    const sub = addSubscription(chatId, planId, reference);
+    
+    // Record payment
+    db.payments = db.payments || [];
+    db.payments.push({
+        chatId,
+        planId,
+        planName: plan.name,
+        amount: plan.amount,
+        reference,
+        timestamp: new Date().toISOString()
+    });
+    saveData();
+    
+    // Send success message with group link
+    const message = `
+🎉 *Payment Successful!*
+
+✅ *${plan.name}* is now active!
+
+💰 Amount Paid: ₵${plan.amount.toLocaleString()}
+📅 Expires: ${plan.isLifetime ? 'Never (Lifetime)' : formatDate(sub.expiryDate)}
+🧾 Reference: \`${reference}\`
+
+Join your exclusive group now! 👇
+    `;
+    
+    await bot.sendMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: '🚀 JOIN YOUR GROUP NOW', url: TELEGRAM_LINKS[planId] }],
+                [{ text: '📋 My Subscriptions', callback_data: 'my_subs' }],
+                [{ text: '🏠 Menu', callback_data: 'main_menu' }]
+            ]
+        }
+    });
+    
+    // Notify admin
+    if (ADMIN_TELEGRAM_ID) {
+        bot.sendMessage(ADMIN_TELEGRAM_ID, `
+💰 *NEW PAYMENT!*
+
+User: ${user?.first_name || 'Unknown'} (@${user?.username || 'N/A'})
+ID: \`${chatId}\`
+Plan: ${plan.name}
+Amount: ₵${plan.amount.toLocaleString()}
+Ref: \`${reference}\`
+        `, { parse_mode: 'Markdown' });
+    }
+}
+
+// Manual payment flow
+function showManualPayment(chatId, planId, user) {
+    const plan = PLANS[planId];
+    
+    const message = `
+💳 *Manual Payment for ${plan.name}*
+
+*Amount:* ₵${plan.amount.toLocaleString()}
+
+*Payment Methods:*
+
+📱 *Mobile Money:*
+   Number: \`0596688947\`
+   Name: Ayarisi Amos
+
+🏦 *Bank Transfer:*
+   Bank: Stanbic Bank
+   Account: \`9040010942548\`
+   Name: Ayarisi Amos
+
+After payment, click "I Have Paid" and send your transaction ID. ✅
+    `;
+    
+    const keyboard = {
+        inline_keyboard: [
+            [{ text: '✅ I Have Paid', callback_data: `confirm_manual_${planId}` }],
+            [{ text: '💬 Pay via WhatsApp', url: `https://wa.me/233596688947?text=Hi, I want to pay for ${plan.name} (₵${plan.amount})` }],
+            [{ text: '⬅️ Back', callback_data: `pay_${planId}` }]
+        ]
+    };
+    
+    bot.sendMessage(chatId, message, { parse_mode: 'Markdown', reply_markup: keyboard });
+}
+
+function confirmManualPayment(chatId, planId, user) {
     const plan = PLANS[planId];
     
     bot.sendMessage(chatId, `
@@ -825,16 +1100,16 @@ function confirmPayment(chatId, planId, user) {
 
 Please send your:
 1. Payment method (MoMo/Bank)
-2. Transaction ID
+2. Transaction ID/Reference
 3. Name on account
 
-Our team will verify within 24 hours! ✅
+Our team will verify and activate your subscription within a few hours! ✅
     `, { parse_mode: 'Markdown' });
     
     // Notify admin
     if (ADMIN_TELEGRAM_ID) {
         bot.sendMessage(ADMIN_TELEGRAM_ID, `
-🔔 *Payment Confirmation Request*
+🔔 *Manual Payment Request*
 
 User: ${user.first_name} ${user.last_name || ''}
 Username: @${user.username || 'N/A'}
@@ -842,21 +1117,160 @@ User ID: \`${chatId}\`
 Plan: ${plan.name}
 Amount: ₵${plan.amount}
 
-To approve:
+To approve after verifying payment:
 \`/approve ${chatId} ${planId}\`
         `, { parse_mode: 'Markdown' });
     }
 }
 
 // ============================================
-// EXPRESS SERVER
+// EXPRESS SERVER & PAYSTACK WEBHOOK
 // ============================================
 
 app.get('/', (req, res) => res.send('Themosempire Fx Bot Running! 🚀'));
 app.get('/health', (req, res) => res.json({ status: 'OK', time: new Date().toISOString() }));
 
+// Paystack Webhook - Auto process payments
+app.post('/webhook/paystack', async (req, res) => {
+    try {
+        // Verify webhook signature
+        const hash = crypto
+            .createHmac('sha512', PAYSTACK_SECRET_KEY)
+            .update(JSON.stringify(req.body))
+            .digest('hex');
+        
+        if (hash !== req.headers['x-paystack-signature']) {
+            console.log('Invalid Paystack webhook signature');
+            return res.sendStatus(400);
+        }
+        
+        const event = req.body;
+        console.log('Paystack webhook:', event.event);
+        
+        if (event.event === 'charge.success') {
+            const data = event.data;
+            const reference = data.reference;
+            const metadata = data.metadata;
+            
+            // Check if we have this pending payment
+            const pendingPayment = db.pendingPaystackPayments?.[reference];
+            
+            if (pendingPayment) {
+                console.log(`Processing payment: ${reference}`);
+                
+                await processSuccessfulPayment(
+                    parseInt(pendingPayment.chatId),
+                    pendingPayment.planId,
+                    reference,
+                    pendingPayment.user
+                );
+                
+                // Clean up
+                delete db.pendingPaystackPayments[reference];
+                saveData();
+            } else if (metadata?.telegram_user_id) {
+                // Fallback: use metadata from Paystack
+                console.log(`Processing payment from metadata: ${reference}`);
+                
+                await processSuccessfulPayment(
+                    parseInt(metadata.telegram_user_id),
+                    metadata.plan_id,
+                    reference,
+                    { first_name: metadata.user_first_name, username: metadata.username }
+                );
+            }
+        }
+        
+        res.sendStatus(200);
+    } catch (error) {
+        console.error('Webhook error:', error);
+        res.sendStatus(500);
+    }
+});
+
+// Payment callback page (when user returns from Paystack)
+app.get('/payment/callback', async (req, res) => {
+    const reference = req.query.reference;
+    
+    if (reference) {
+        try {
+            // Verify payment
+            const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`, {
+                headers: { 'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}` }
+            });
+            
+            const data = response.data.data;
+            
+            if (data.status === 'success') {
+                const metadata = data.metadata;
+                const pendingPayment = db.pendingPaystackPayments?.[reference];
+                
+                if (pendingPayment && !db.payments?.find(p => p.reference === reference)) {
+                    await processSuccessfulPayment(
+                        parseInt(pendingPayment.chatId),
+                        pendingPayment.planId,
+                        reference,
+                        pendingPayment.user
+                    );
+                    
+                    delete db.pendingPaystackPayments[reference];
+                    saveData();
+                }
+                
+                res.send(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Payment Successful - Themosempire Fx</title>
+                        <meta name="viewport" content="width=device-width, initial-scale=1">
+                        <style>
+                            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f0f0f0; }
+                            .card { background: white; border-radius: 15px; padding: 40px; max-width: 400px; margin: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+                            .success { color: #28a745; font-size: 60px; }
+                            h1 { color: #333; }
+                            p { color: #666; }
+                            .btn { background: #007bff; color: white; padding: 15px 30px; border-radius: 30px; text-decoration: none; display: inline-block; margin-top: 20px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="card">
+                            <div class="success">✅</div>
+                            <h1>Payment Successful!</h1>
+                            <p>Your subscription has been activated.</p>
+                            <p>Return to Telegram to get your group access link!</p>
+                            <a href="https://t.me/" class="btn">Open Telegram</a>
+                        </div>
+                    </body>
+                    </html>
+                `);
+            } else {
+                res.send(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head><title>Payment Pending</title></head>
+                    <body style="font-family: Arial; text-align: center; padding: 50px;">
+                        <h1>⏳ Payment Pending</h1>
+                        <p>Your payment is being processed. Please check Telegram for confirmation.</p>
+                    </body>
+                    </html>
+                `);
+            }
+        } catch (error) {
+            console.error('Callback error:', error);
+            res.send('<h1>Error processing payment</h1><p>Please contact support.</p>');
+        }
+    } else {
+        res.send('<h1>Invalid request</h1>');
+    }
+});
+
 app.listen(PORT, () => {
-    console.log(`🌐 Server on port ${PORT}`);
+    console.log(`🌐 Server running on port ${PORT}`);
     console.log('✅ Bot ready!');
     console.log(`👑 Admin ID: ${ADMIN_TELEGRAM_ID}`);
+    if (WEBHOOK_URL) {
+        console.log(`🔗 Webhook URL: ${WEBHOOK_URL}/webhook/paystack`);
+    } else {
+        console.log('⚠️ Set WEBHOOK_URL in .env for automatic payment processing');
+    }
 });

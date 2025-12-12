@@ -1,111 +1,190 @@
 # ============================================
 # THEMOSEMPIRE FX TELEGRAM BOT - DEPLOYMENT GUIDE
+# FREE 24/7 HOSTING WITH AUTOMATED PAYSTACK PAYMENTS
 # ============================================
 
-## 🚀 FREE 24/7 DEPLOYMENT OPTIONS
+## 🚀 COMPLETE SETUP GUIDE
 
-### OPTION 1: RENDER.COM (RECOMMENDED - Easiest)
+### STEP 1: CREATE TELEGRAM BOT
 
-1. **Create Account**
-   - Go to https://render.com
-   - Sign up with GitHub (recommended)
-
-2. **Push Code to GitHub**
-   - Create a new repository on GitHub
-   - Upload the telegram-bot folder contents
-
-3. **Deploy on Render**
-   - Click "New" → "Web Service"
-   - Connect your GitHub repository
-   - Settings:
-     - Name: themosempire-fx-bot
-     - Runtime: Node
-     - Build Command: npm install
-     - Start Command: node bot.js
-   
-4. **Add Environment Variables**
-   In Render dashboard, add these:
-   ```
-   TELEGRAM_BOT_TOKEN=your_bot_token_from_botfather
-   PAYSTACK_SECRET_KEY=sk_test_00368579d28a59477f6ef54414fbe65602adbb97
-   ADMIN_TELEGRAM_ID=your_telegram_user_id
-   ```
-
-5. Click "Create Web Service" - Done! ✅
-
----
-
-### OPTION 2: RAILWAY.APP (Also Free)
-
-1. Go to https://railway.app
-2. Sign up with GitHub
-3. Click "New Project" → "Deploy from GitHub repo"
-4. Select your repository
-5. Add environment variables
-6. Deploy!
-
----
-
-### OPTION 3: KOYEB.COM (Free Tier)
-
-1. Go to https://koyeb.com
-2. Sign up
-3. Create new service from GitHub
-4. Configure and deploy
-
----
-
-### OPTION 4: CYCLIC.SH (Totally Free)
-
-1. Go to https://cyclic.sh
-2. Sign up with GitHub
-3. Deploy from repository
-4. Add environment variables
-
----
-
-## 📱 FIRST: CREATE YOUR BOT WITH BOTFATHER
-
-Before deploying, you need a bot token:
-
-1. Open Telegram and search for @BotFather
+1. Open Telegram, search for @BotFather
 2. Send: /newbot
-3. Choose a name: Themosempire Fx Academy
-4. Choose a username: ThemosempireFxBot (must end with 'bot')
-5. Copy the token BotFather gives you
-6. Use this token in your environment variables
+3. Name: Themosempire Fx Academy
+4. Username: ThemosempireFxBot (must end with 'bot')
+5. COPY THE TOKEN - you'll need it!
 
 ---
 
-## 🔧 GET YOUR TELEGRAM USER ID (For Admin)
+### STEP 2: GET YOUR TELEGRAM USER ID
 
 1. Search for @userinfobot on Telegram
-2. Start the bot
-3. It will show your User ID
-4. Use this as ADMIN_TELEGRAM_ID
+2. Start it
+3. It shows your User ID (e.g., 6330862723)
+4. Save this - you're the admin!
 
 ---
 
-## 📁 FILES TO UPLOAD TO GITHUB
+### STEP 3: CREATE YOUR TELEGRAM GROUPS
 
-Upload these files from telegram-bot folder:
-- bot.js
-- package.json
-- Procfile
-- .env.example (NOT .env - keep that private!)
+Create 6 private groups (one for each plan):
+1. Themosempire Free Trial
+2. Themosempire Basic Plan
+3. Themosempire Pro Trader
+4. Themosempire Lifetime Access
+5. Themosempire Trading Signals
+6. Themosempire Premium (3-Year)
+
+For each group:
+- Add your bot as ADMIN
+- Get the invite link (Group Settings → Invite Link)
+- Save each link
 
 ---
 
-## ⚡ QUICK DEPLOY STEPS (Render.com)
+### STEP 4: PUSH CODE TO GITHUB
 
-1. Create GitHub repo
-2. Upload bot files
-3. Go to render.com → New → Web Service
-4. Connect GitHub
-5. Add environment variables:
-   - TELEGRAM_BOT_TOKEN
-   - PAYSTACK_SECRET_KEY  
-   - ADMIN_TELEGRAM_ID
-6. Deploy!
+1. Create GitHub account: https://github.com
+2. Create new repository: themosempire-fx-bot
+3. Upload these files:
+   - bot.js
+   - package.json
+   - Procfile
+   - .gitignore
+   - .env.example (NOT .env!)
 
-Your bot will be live 24/7 for FREE! 🎉
+---
+
+### STEP 5: DEPLOY ON RENDER.COM (FREE)
+
+1. Go to https://render.com
+2. Sign up with GitHub
+3. Click "New" → "Web Service"
+4. Connect your GitHub repository
+5. Settings:
+   - Name: themosempire-fx-bot
+   - Runtime: Node
+   - Build Command: npm install
+   - Start Command: node bot.js
+   - Instance Type: Free
+
+6. Add Environment Variables:
+   
+   TELEGRAM_BOT_TOKEN = (your bot token from BotFather)
+   PAYSTACK_SECRET_KEY = sk_test_00368579d28a59477f6ef54414fbe65602adbb97
+   PAYSTACK_PUBLIC_KEY = pk_test_3c4130cf2ffa483ade57eddac4504bc706e52bac
+   ADMIN_TELEGRAM_ID = (your user ID)
+   PORT = 3000
+   TELEGRAM_FREE_TRIAL_LINK = (your group link)
+   TELEGRAM_BASIC_PLAN_LINK = (your group link)
+   TELEGRAM_PRO_TRADER_LINK = (your group link)
+   TELEGRAM_LIFETIME_ACCESS_LINK = (your group link)
+   TELEGRAM_TRADING_SIGNALS_LINK = (your group link)
+   TELEGRAM_PREMIUM_3YEAR_LINK = (your group link)
+
+7. Click "Create Web Service"
+8. Wait for deployment (2-5 minutes)
+9. Copy your URL (e.g., https://themosempire-fx-bot.onrender.com)
+
+---
+
+### STEP 6: ADD WEBHOOK URL
+
+1. In Render dashboard, add another environment variable:
+   
+   WEBHOOK_URL = https://themosempire-fx-bot.onrender.com
+   
+   (Use YOUR actual Render URL)
+
+2. Redeploy the service
+
+---
+
+### STEP 7: SETUP PAYSTACK WEBHOOK (IMPORTANT!)
+
+This makes payments AUTOMATIC!
+
+1. Go to https://dashboard.paystack.co
+2. Click Settings → API Keys & Webhooks
+3. Find "Webhook URL" section
+4. Enter: https://themosempire-fx-bot.onrender.com/webhook/paystack
+   (Use YOUR Render URL)
+5. Save!
+
+Now when someone pays, Paystack tells your bot automatically! 🎉
+
+---
+
+### STEP 8: TEST YOUR BOT
+
+1. Open Telegram
+2. Search for your bot username
+3. Click /start
+4. Try selecting a plan
+5. Test with Paystack test card:
+   - Card: 4084 0843 0843 0843
+   - Expiry: 12/99
+   - CVV: 123
+   - OTP: 123456
+
+---
+
+## 🔄 HOW PAYMENTS WORK (AUTOMATED)
+
+1. User clicks "Pay with Paystack"
+2. Enters email
+3. Gets payment link
+4. Pays with Card/MoMo
+5. Paystack sends webhook to your bot
+6. Bot AUTOMATICALLY:
+   - Activates subscription
+   - Sends group invite link
+   - Starts tracking expiry
+   - Notifies admin
+
+No manual approval needed! 🚀
+
+---
+
+## ⏰ SUBSCRIPTION FEATURES
+
+✅ Auto-expiry tracking
+✅ 3-day warning before expiry
+✅ 1-day warning before expiry
+✅ Auto-removal from group when expired
+✅ Easy renewal with same process
+
+---
+
+## 👑 ADMIN COMMANDS
+
+/subs - View all subscribers
+/approve <userId> <planId> - Manual approval (for bank transfers)
+/broadcast <message> - Send to all users
+
+---
+
+## 🔧 TROUBLESHOOTING
+
+Bot not responding?
+- Check Render logs for errors
+- Verify TELEGRAM_BOT_TOKEN is correct
+
+Payments not auto-activating?
+- Check WEBHOOK_URL is set correctly
+- Verify Paystack webhook URL in dashboard
+- Check Render logs for webhook events
+
+Users not getting group links?
+- Verify TELEGRAM_*_LINK variables are set
+- Make sure links are valid invite links
+
+---
+
+## 📞 SUPPORT
+
+Email: Themosempire@gmail.com
+WhatsApp: +233 596 688 947
+
+---
+
+Your bot is now LIVE 24/7 for FREE! 🎉

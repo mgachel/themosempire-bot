@@ -36,21 +36,17 @@ const WEBHOOK_URL = process.env.WEBHOOK_URL || ''; // Your deployed URL e.g., ht
 // To get group ID: Add bot to group, send a message, check bot updates
 const GROUP_IDS = {
     'free-trial': process.env.GROUP_FREE_TRIAL || null,
-    'basic-plan': process.env.GROUP_BASIC_PLAN || null,
+    'vip-signals': process.env.GROUP_VIP_SIGNALS || null,
     'pro-trader-plan': process.env.GROUP_PRO_TRADER || null,
-    'lifetime-access': process.env.GROUP_LIFETIME || null,
-    'trading-signals': process.env.GROUP_SIGNALS || null,
-    '3-year-analytical-stage': process.env.GROUP_PREMIUM || null
+    'lifetime-access': process.env.GROUP_LIFETIME || null
 };
 
 // Telegram Group Invite Links
 const TELEGRAM_LINKS = {
     'free-trial': process.env.TELEGRAM_FREE_TRIAL_LINK || 'https://t.me/+FreeTrialLink',
-    'basic-plan': process.env.TELEGRAM_BASIC_PLAN_LINK || 'https://t.me/+BasicPlanLink',
+    'vip-signals': process.env.TELEGRAM_VIP_SIGNALS_LINK || 'https://t.me/+VIPSignalsLink',
     'pro-trader-plan': process.env.TELEGRAM_PRO_TRADER_LINK || 'https://t.me/+ProTraderLink',
-    'lifetime-access': process.env.TELEGRAM_LIFETIME_ACCESS_LINK || 'https://t.me/+LifetimeLink',
-    'trading-signals': process.env.TELEGRAM_TRADING_SIGNALS_LINK || 'https://t.me/+SignalsLink',
-    '3-year-analytical-stage': process.env.TELEGRAM_PREMIUM_3YEAR_LINK || 'https://t.me/+PremiumLink'
+    'lifetime-access': process.env.TELEGRAM_LIFETIME_ACCESS_LINK || 'https://t.me/+LifetimeLink'
 };
 
 // Pricing Plans with duration in days
@@ -64,13 +60,13 @@ const PLANS = {
         features: ['Basic forex concepts', 'Sample lessons', 'Community access'],
         isLifetime: false
     },
-    'basic-plan': {
-        name: 'Basic Plan',
-        amount: 300,
+    'vip-signals': {
+        name: 'VIP Signals',
+        amount: 200,
         durationDays: 30,
         duration: 'Monthly',
-        description: 'Core courses access for beginners',
-        features: ['All core courses', 'Video lessons', 'Downloadable PDFs', 'Assignments'],
+        description: 'Daily & weekly trading alerts',
+        features: ['Daily market alerts', 'Entry & exit points', 'Expert analysis', 'Telegram updates'],
         isLifetime: false
     },
     'pro-trader-plan': {
@@ -84,30 +80,12 @@ const PLANS = {
     },
     'lifetime-access': {
         name: 'Lifetime Access',
-        amount: 1500,
+        amount: 2000,
         durationDays: 36500,
         duration: 'Lifetime',
         description: 'Forever access to all courses',
-        features: ['All courses forever', 'Lifetime updates', 'Premium resources', 'Community access'],
+        features: ['All courses forever', 'Lifetime updates', 'Premium resources', 'Community access', 'Priority support'],
         isLifetime: true
-    },
-    'trading-signals': {
-        name: 'Trading Signals',
-        amount: 200,
-        durationDays: 30,
-        duration: 'Monthly',
-        description: 'Daily & weekly trading alerts',
-        features: ['Daily market alerts', 'Entry & exit points', 'Expert analysis', 'Telegram updates'],
-        isLifetime: false
-    },
-    '3-year-analytical-stage': {
-        name: '3-Year Analytical Stage',
-        amount: 30000,
-        durationDays: 1095,
-        duration: '3 Years',
-        description: 'Premium complete mastery program',
-        features: ['3 years mentorship', 'Advanced analytics', 'All resources', 'Expert certification', 'Lifetime support'],
-        isLifetime: false
     }
 };
 
@@ -641,11 +619,9 @@ function showPricing(chatId) {
 💰 *Choose Your Plan*
 
 🆓 *Free Trial* - FREE (7 days)
-📚 *Basic Plan* - ₵300/month
+📊 *VIP Signals* - ₵200/month
 ⭐ *Pro Trader* - ₵500/month
-♾️ *Lifetime* - ₵1,500 (one-time)
-📊 *Signals Only* - ₵200/month
-💎 *3-Year Premium* - ₵30,000
+♾️ *Lifetime* - ₵2,000 (one-time)
 
 Select a plan below:
     `;
@@ -653,10 +629,8 @@ Select a plan below:
     const keyboard = {
         inline_keyboard: [
             [{ text: '🆓 Free Trial', callback_data: 'pay_free-trial' }],
-            [{ text: '📚 Basic ₵300', callback_data: 'pay_basic-plan' }, { text: '⭐ Pro ₵500', callback_data: 'pay_pro-trader-plan' }],
-            [{ text: '♾️ Lifetime ₵1,500', callback_data: 'pay_lifetime-access' }],
-            [{ text: '📊 Signals ₵200', callback_data: 'pay_trading-signals' }],
-            [{ text: '💎 3-Year ₵30,000', callback_data: 'pay_3-year-analytical-stage' }],
+            [{ text: '📊 VIP Signals ₵200', callback_data: 'pay_vip-signals' }, { text: '⭐ Pro ₵500', callback_data: 'pay_pro-trader-plan' }],
+            [{ text: '♾️ Lifetime ₵2,000', callback_data: 'pay_lifetime-access' }],
             [{ text: '🏠 Menu', callback_data: 'main_menu' }]
         ]
     };
@@ -666,7 +640,7 @@ Select a plan below:
 
 function showSignals(chatId) {
     const message = `
-📊 *Trading Signals*
+📊 *VIP Trading Signals*
 
 Get daily & weekly forex signals from Ayarisi Amos!
 
@@ -680,7 +654,7 @@ Get daily & weekly forex signals from Ayarisi Amos!
     
     const keyboard = {
         inline_keyboard: [
-            [{ text: '📊 Subscribe ₵200/mo', callback_data: 'pay_trading-signals' }],
+            [{ text: '📊 Subscribe ₵200/mo', callback_data: 'pay_vip-signals' }],
             [{ text: '🏠 Menu', callback_data: 'main_menu' }]
         ]
     };

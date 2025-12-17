@@ -105,7 +105,7 @@ const FAQS = [
     },
     {
         question: "What payment methods accepted?",
-        answer: "Mobile Money (MTN, Vodafone, AirtelTigo), Bank cards, Bank transfer, and Crypto."
+        answer: "We accept Mobile Money (MTN, Vodafone, AirtelTigo) and Bank Cards via Paystack - secure and instant!"
     },
     {
         question: "What happens when subscription expires?",
@@ -535,8 +535,6 @@ bot.on('callback_query', async (query) => {
     else if (data.startsWith('faq_')) showFAQAnswer(chatId, parseInt(data.replace('faq_', '')));
     else if (data.startsWith('pay_')) initPayment(chatId, data.replace('pay_', ''), query.from);
     else if (data.startsWith('paystack_')) generatePaystackLink(chatId, data.replace('paystack_', ''), query.from);
-    else if (data.startsWith('manual_')) showManualPayment(chatId, data.replace('manual_', ''), query.from);
-    else if (data.startsWith('confirm_manual_')) confirmManualPayment(chatId, data.replace('confirm_manual_', ''), query.from);
     else if (data.startsWith('verify_')) verifyPaystackPayment(chatId, data.replace('verify_', ''));
 });
 
@@ -738,9 +736,7 @@ function showContact(chatId) {
 📱 +233 596 688 947
 📍 Navrongo, Ghana
 
-*Payment Details:*
-📱 MoMo: 0596688947
-🏦 Stanbic: 9040010942548
+💳 All payments via Paystack (MoMo/Card)
     `;
     
     const keyboard = {
@@ -801,20 +797,19 @@ Join the group below! 👇
         return bot.sendMessage(chatId, '✅ You already have Lifetime Access!');
     }
     
-    // Show payment options
+    // Show payment options - Paystack only
     const message = `
 💳 *Pay for ${plan.name}*
 
 *Amount:* ₵${plan.amount.toLocaleString()}
 *Duration:* ${plan.duration}
 
-Choose how to pay:
+💡 Pay securely with Paystack (Mobile Money or Card)
     `;
     
     const keyboard = {
         inline_keyboard: [
-            [{ text: '💳 Pay with Paystack (Card/MoMo)', callback_data: `paystack_${planId}` }],
-            [{ text: '📱 Manual Payment (MoMo/Bank)', callback_data: `manual_${planId}` }],
+            [{ text: '💳 Pay Now (Card/MoMo)', callback_data: `paystack_${planId}` }],
             [{ text: '⬅️ Back', callback_data: 'view_pricing' }]
         ]
     };
@@ -1028,71 +1023,6 @@ ID: \`${chatId}\`
 Plan: ${plan.name}
 Amount: ₵${plan.amount.toLocaleString()}
 Ref: \`${reference}\`
-        `, { parse_mode: 'Markdown' });
-    }
-}
-
-// Manual payment flow
-function showManualPayment(chatId, planId, user) {
-    const plan = PLANS[planId];
-    
-    const message = `
-💳 *Manual Payment for ${plan.name}*
-
-*Amount:* ₵${plan.amount.toLocaleString()}
-
-*Payment Methods:*
-
-📱 *Mobile Money:*
-   Number: \`0596688947\`
-   Name: Ayarisi Amos
-
-🏦 *Bank Transfer:*
-   Bank: Stanbic Bank
-   Account: \`9040010942548\`
-   Name: Ayarisi Amos
-
-After payment, click "I Have Paid" and send your transaction ID. ✅
-    `;
-    
-    const keyboard = {
-        inline_keyboard: [
-            [{ text: '✅ I Have Paid', callback_data: `confirm_manual_${planId}` }],
-            [{ text: '💬 Pay via WhatsApp', url: `https://wa.me/233596688947?text=Hi, I want to pay for ${plan.name} (₵${plan.amount})` }],
-            [{ text: '⬅️ Back', callback_data: `pay_${planId}` }]
-        ]
-    };
-    
-    bot.sendMessage(chatId, message, { parse_mode: 'Markdown', reply_markup: keyboard });
-}
-
-function confirmManualPayment(chatId, planId, user) {
-    const plan = PLANS[planId];
-    
-    bot.sendMessage(chatId, `
-📝 *Payment Confirmation*
-
-Please send your:
-1. Payment method (MoMo/Bank)
-2. Transaction ID/Reference
-3. Name on account
-
-Our team will verify and activate your subscription within a few hours! ✅
-    `, { parse_mode: 'Markdown' });
-    
-    // Notify admin
-    if (ADMIN_TELEGRAM_ID) {
-        bot.sendMessage(ADMIN_TELEGRAM_ID, `
-🔔 *Manual Payment Request*
-
-User: ${user.first_name} ${user.last_name || ''}
-Username: @${user.username || 'N/A'}
-User ID: \`${chatId}\`
-Plan: ${plan.name}
-Amount: ₵${plan.amount}
-
-To approve after verifying payment:
-\`/approve ${chatId} ${planId}\`
         `, { parse_mode: 'Markdown' });
     }
 }

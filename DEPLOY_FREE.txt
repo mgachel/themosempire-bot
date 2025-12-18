@@ -1,5 +1,5 @@
 # ============================================
-# THEMOSEMPIRE FX TELEGRAM BOT - DEPLOYMENT GUIDE
+# THEMOS EMPIRE FX TELEGRAM BOT - DEPLOYMENT GUIDE
 # FREE 24/7 HOSTING WITH AUTOMATED PAYSTACK PAYMENTS
 # ============================================
 
@@ -9,8 +9,8 @@
 
 1. Open Telegram, search for @BotFather
 2. Send: /newbot
-3. Name: Themosempire Fx Academy
-4. Username: ThemosempireFxBot (must end with 'bot')
+3. Name: Themos Empire Fx Academy
+4. Username: ThemosEmpireFxBot (must end with 'bot')
 5. COPY THE TOKEN - you'll need it!
 
 ---
@@ -26,13 +26,11 @@
 
 ### STEP 3: CREATE YOUR TELEGRAM GROUPS
 
-Create 6 private groups (one for each plan):
-1. Themosempire Free Trial
-2. Themosempire Basic Plan
-3. Themosempire Pro Trader
-4. Themosempire Lifetime Access
-5. Themosempire Trading Signals
-6. Themosempire Premium (3-Year)
+Create 4 private groups (one for each plan):
+1. Themos Empire Free Trial
+2. Themos Empire VIP Signals
+3. Themos Empire Pro Trader
+4. Themos Empire Lifetime Access
 
 For each group:
 - Add your bot as ADMIN
@@ -44,7 +42,7 @@ For each group:
 ### STEP 4: PUSH CODE TO GITHUB
 
 1. Create GitHub account: https://github.com
-2. Create new repository: themosempire-fx-bot
+2. Create new repository: themos-empire-fx-bot
 3. Upload these files:
    - bot.js
    - package.json
@@ -61,7 +59,7 @@ For each group:
 3. Click "New" → "Web Service"
 4. Connect your GitHub repository
 5. Settings:
-   - Name: themosempire-fx-bot
+   - Name: themos-empire-fx-bot
    - Runtime: Node
    - Build Command: npm install
    - Start Command: node bot.js
@@ -70,20 +68,18 @@ For each group:
 6. Add Environment Variables:
    
    TELEGRAM_BOT_TOKEN = (your bot token from BotFather)
-   PAYSTACK_SECRET_KEY = sk_test_00368579d28a59477f6ef54414fbe65602adbb97
-   PAYSTACK_PUBLIC_KEY = pk_test_3c4130cf2ffa483ade57eddac4504bc706e52bac
+   PAYSTACK_SECRET_KEY = sk_live_your_secret_key_here
+   PAYSTACK_PUBLIC_KEY = pk_live_your_public_key_here
    ADMIN_TELEGRAM_ID = (your user ID)
    PORT = 3000
    TELEGRAM_FREE_TRIAL_LINK = (your group link)
-   TELEGRAM_BASIC_PLAN_LINK = (your group link)
+   TELEGRAM_VIP_SIGNALS_LINK = (your group link)
    TELEGRAM_PRO_TRADER_LINK = (your group link)
    TELEGRAM_LIFETIME_ACCESS_LINK = (your group link)
-   TELEGRAM_TRADING_SIGNALS_LINK = (your group link)
-   TELEGRAM_PREMIUM_3YEAR_LINK = (your group link)
 
 7. Click "Create Web Service"
 8. Wait for deployment (2-5 minutes)
-9. Copy your URL (e.g., https://themosempire-fx-bot.onrender.com)
+9. Copy your URL (e.g., https://themos-empire-fx-bot.onrender.com)
 
 ---
 
@@ -91,7 +87,7 @@ For each group:
 
 1. In Render dashboard, add another environment variable:
    
-   WEBHOOK_URL = https://themosempire-fx-bot.onrender.com
+   WEBHOOK_URL = https://themos-empire-fx-bot.onrender.com
    
    (Use YOUR actual Render URL)
 
@@ -106,7 +102,7 @@ This makes payments AUTOMATIC!
 1. Go to https://dashboard.paystack.co
 2. Click Settings → API Keys & Webhooks
 3. Find "Webhook URL" section
-4. Enter: https://themosempire-fx-bot.onrender.com/webhook/paystack
+4. Enter: https://themos-empire-fx-bot.onrender.com/webhook/paystack
    (Use YOUR Render URL)
 5. Save!
 
@@ -182,7 +178,7 @@ Users not getting group links?
 
 ## 📞 SUPPORT
 
-Email: Themosempire@gmail.com
+Email: ThemosEmpire@gmail.com
 WhatsApp: +233 596 688 947
 
 ---

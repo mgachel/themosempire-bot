@@ -1,6 +1,6 @@
 /**
  * ============================================
- * THEMOSEMPIRE FX - TELEGRAM BOT
+ * THEMOS EMPIRE FX - TELEGRAM BOT
  * Financial Literacy & Forex Trading Academy
  * Founded by Ayarisi Amos
  * 
@@ -152,7 +152,7 @@ const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 const app = express();
 app.use(express.json());
 
-console.log('Themosempire Fx Bot starting...');
+console.log('Themos Empire Fx Bot starting...');
 
 // ============================================
 // HELPER FUNCTIONS
@@ -268,26 +268,26 @@ async function sendExpiryReminder(userId, sub, daysLeft) {
     const dayText = daysLeft === 1 ? '1 day' : `${daysLeft} days`;
     
     const message = `
-⚠️ *Subscription Expiring Soon!*
+*Subscription Expiring Soon!*
 
 Your *${sub.planName}* expires in *${dayText}*!
 
-📅 Expiry: ${formatDate(sub.expiryDate)}
-💰 Renew for: ₵${plan.amount}
+Expiry: ${formatDate(sub.expiryDate)}
+Renew for: GHS ${plan.amount}
 
-Renew now to keep your access! 👇
+Renew now to keep your access!
     `;
     
     const keyboard = {
         inline_keyboard: [
-            [{ text: `Renew ${sub.planName} - ₵${plan.amount}`, callback_data: `pay_${sub.planId}` }],
-            [{ text: '📋 All Plans', callback_data: 'view_pricing' }]
+            [{ text: `Renew ${sub.planName} - GHS ${plan.amount}`, callback_data: `pay_${sub.planId}` }],
+            [{ text: 'All Plans', callback_data: 'view_pricing' }]
         ]
     };
     
     try {
         await bot.sendMessage(userId, message, { parse_mode: 'Markdown', reply_markup: keyboard });
-        console.log(`📧 Sent ${daysLeft}-day reminder to ${userId}`);
+        console.log(`Sent ${daysLeft}-day reminder to ${userId}`);
     } catch (err) {
         console.error(`Failed to send reminder to ${userId}:`, err.message);
     }
@@ -303,7 +303,7 @@ async function handleExpiredSubscription(userId, sub) {
         try {
             await bot.banChatMember(groupId, userId);
             await bot.unbanChatMember(groupId, userId); // Unban so they can rejoin after renewal
-            console.log(`🚫 Removed ${userId} from ${sub.planName} group`);
+            console.log(`Removed ${userId} from ${sub.planName} group`);
         } catch (err) {
             console.error(`Failed to remove ${userId} from group:`, err.message);
         }
@@ -312,20 +312,20 @@ async function handleExpiredSubscription(userId, sub) {
     // Notify user
     const plan = PLANS[sub.planId];
     const message = `
-❌ *Subscription Expired*
+*Subscription Expired*
 
 Your *${sub.planName}* has expired and you've been removed from the group.
 
 To regain access, renew your subscription:
-💰 *₵${plan.amount}* for ${plan.duration}
+*GHS ${plan.amount}* for ${plan.duration}
 
-Click below to renew! 👇
+Click below to renew!
     `;
     
     const keyboard = {
         inline_keyboard: [
-            [{ text: `🔄 Renew Now - ₵${plan.amount}`, callback_data: `pay_${sub.planId}` }],
-            [{ text: '📞 Contact Support', callback_data: 'contact' }]
+            [{ text: `Renew Now - GHS ${plan.amount}`, callback_data: `pay_${sub.planId}` }],
+            [{ text: 'Contact Support', callback_data: 'contact' }]
         ]
     };
     
@@ -338,7 +338,7 @@ Click below to renew! 👇
     // Notify admin
     if (ADMIN_TELEGRAM_ID) {
         await bot.sendMessage(ADMIN_TELEGRAM_ID, 
-            `🔔 *Subscription Expired*\nUser: \`${userId}\`\nPlan: ${sub.planName}`, 
+            `*Subscription Expired*\nUser: \`${userId}\`\nPlan: ${sub.planName}`, 
             { parse_mode: 'Markdown' }
         ).catch(() => {});
     }
@@ -369,25 +369,25 @@ bot.onText(/\/start/, (msg) => {
     saveData();
     
     const message = `
-🎯 *Welcome to Themosempire Fx, ${name}!*
+*Welcome to Themos Empire Fx, ${name}!*
 
 Master Your Money. Conquer the Forex Market.
 
 I can help you with:
-📚 Course enrollment
-💳 Payments & subscriptions
-📊 Trading signals
-⏰ Subscription management
+- Course enrollment
+- Payments & subscriptions
+- Trading signals
+- Subscription management
 
 *Founded by Ayarisi Amos*
-📍 Navrongo, Ghana
+Navrongo, Ghana
     `;
     
     const keyboard = {
         inline_keyboard: [
-            [{ text: '📚 Courses', callback_data: 'courses' }, { text: '💰 Pricing', callback_data: 'view_pricing' }],
-            [{ text: '📊 Signals', callback_data: 'signals' }, { text: '📋 My Subs', callback_data: 'my_subs' }],
-            [{ text: '❓ FAQs', callback_data: 'faqs' }, { text: '📞 Contact', callback_data: 'contact' }]
+            [{ text: 'Courses', callback_data: 'courses' }, { text: 'Pricing', callback_data: 'view_pricing' }],
+            [{ text: 'Signals', callback_data: 'signals' }, { text: 'My Subs', callback_data: 'my_subs' }],
+            [{ text: 'FAQs', callback_data: 'faqs' }, { text: 'Contact', callback_data: 'contact' }]
         ]
     };
     
@@ -403,7 +403,7 @@ bot.onText(/\/renew/, (msg) => showPricing(msg.chat.id));
 // /help
 bot.onText(/\/help/, (msg) => {
     bot.sendMessage(msg.chat.id, `
-📖 *Bot Commands*
+*Bot Commands*
 
 /start - Main menu
 /status - Check subscriptions
@@ -433,7 +433,7 @@ bot.onText(/\/contact/, (msg) => showContact(msg.chat.id));
 // /approve <userId> <planId> - Approve payment
 bot.onText(/\/approve (\d+) (.+)/, async (msg, match) => {
     if (msg.chat.id.toString() !== ADMIN_TELEGRAM_ID.toString()) {
-        return bot.sendMessage(msg.chat.id, '❌ Admin only command');
+        return bot.sendMessage(msg.chat.id, 'Admin only command');
     }
     
     const userId = match[1];
@@ -441,34 +441,34 @@ bot.onText(/\/approve (\d+) (.+)/, async (msg, match) => {
     const plan = PLANS[planId];
     
     if (!plan) {
-        return bot.sendMessage(msg.chat.id, `❌ Invalid plan. Valid plans:\n${Object.keys(PLANS).join('\n')}`);
+        return bot.sendMessage(msg.chat.id, `Invalid plan. Valid plans:\n${Object.keys(PLANS).join('\n')}`);
     }
     
     const sub = addSubscription(userId, planId, 'APPROVED_' + Date.now());
     
     // Notify user
     const userMsg = `
-🎉 *Payment Confirmed!*
+*Payment Confirmed!*
 
 Your *${plan.name}* is now active!
 
-📅 Expires: ${plan.isLifetime ? 'Never (Lifetime)' : formatDate(sub.expiryDate)}
+Expires: ${plan.isLifetime ? 'Never (Lifetime)' : formatDate(sub.expiryDate)}
 
-Join your group now! 👇
+Join your group now!
     `;
     
     const keyboard = {
         inline_keyboard: [
-            [{ text: '🚀 Join Group', url: TELEGRAM_LINKS[planId] }],
-            [{ text: '📋 My Subscriptions', callback_data: 'my_subs' }]
+            [{ text: 'Join Group', url: TELEGRAM_LINKS[planId] }],
+            [{ text: 'My Subscriptions', callback_data: 'my_subs' }]
         ]
     };
     
     try {
         await bot.sendMessage(userId, userMsg, { parse_mode: 'Markdown', reply_markup: keyboard });
-        bot.sendMessage(msg.chat.id, `✅ Approved ${plan.name} for user ${userId}`);
+        bot.sendMessage(msg.chat.id, `Approved ${plan.name} for user ${userId}`);
     } catch (err) {
-        bot.sendMessage(msg.chat.id, `⚠️ Approved but couldn't notify user: ${err.message}`);
+        bot.sendMessage(msg.chat.id, `Approved but couldn't notify user: ${err.message}`);
     }
 });
 
@@ -476,7 +476,7 @@ Join your group now! 👇
 bot.onText(/\/subs/, (msg) => {
     if (msg.chat.id.toString() !== ADMIN_TELEGRAM_ID.toString()) return;
     
-    let message = `📊 *Active Subscriptions*\n\n`;
+    let message = `*Active Subscriptions*\n\n`;
     let count = 0;
     
     for (const odId in db.subscriptions) {
@@ -486,7 +486,7 @@ bot.onText(/\/subs/, (msg) => {
             message += `*${user?.firstName || odId}* (@${user?.username || 'N/A'})\n`;
             active.forEach(s => {
                 const days = getDaysLeft(s.expiryDate);
-                message += `  • ${s.planName}: ${s.isLifetime ? '♾️' : days + 'd left'}\n`;
+                message += `  - ${s.planName}: ${s.isLifetime ? 'Lifetime' : days + 'd left'}\n`;
             });
             count++;
         }
@@ -505,14 +505,14 @@ bot.onText(/\/broadcast (.+)/, async (msg, match) => {
     
     for (const odId in db.users) {
         try {
-            await bot.sendMessage(odId, `📢 *Announcement*\n\n${text}`, { parse_mode: 'Markdown' });
+            await bot.sendMessage(odId, `*Announcement*\n\n${text}`, { parse_mode: 'Markdown' });
             sent++;
         } catch {
             failed++;
         }
     }
     
-    bot.sendMessage(msg.chat.id, `✅ Broadcast sent: ${sent} success, ${failed} failed`);
+    bot.sendMessage(msg.chat.id, `Broadcast sent: ${sent} success, ${failed} failed`);
 });
 
 // ============================================
@@ -560,7 +560,7 @@ bot.on('message', async (msg) => {
             
             await createPaystackPayment(chatId, pending.planId, email, pending.user);
         } else {
-            bot.sendMessage(chatId, '❌ Invalid email. Please enter a valid email address:');
+            bot.sendMessage(chatId, 'Invalid email. Please enter a valid email address:');
         }
     }
 });
@@ -572,40 +572,40 @@ bot.on('message', async (msg) => {
 function showMainMenu(chatId) {
     const keyboard = {
         inline_keyboard: [
-            [{ text: '📚 Courses', callback_data: 'courses' }, { text: '💰 Pricing', callback_data: 'view_pricing' }],
-            [{ text: '📊 Signals', callback_data: 'signals' }, { text: '📋 My Subs', callback_data: 'my_subs' }],
-            [{ text: '❓ FAQs', callback_data: 'faqs' }, { text: '📞 Contact', callback_data: 'contact' }]
+            [{ text: 'Courses', callback_data: 'courses' }, { text: 'Pricing', callback_data: 'view_pricing' }],
+            [{ text: 'Signals', callback_data: 'signals' }, { text: 'My Subs', callback_data: 'my_subs' }],
+            [{ text: 'FAQs', callback_data: 'faqs' }, { text: 'Contact', callback_data: 'contact' }]
         ]
     };
-    bot.sendMessage(chatId, '🏠 *Main Menu*', { parse_mode: 'Markdown', reply_markup: keyboard });
+    bot.sendMessage(chatId, '*Main Menu*', { parse_mode: 'Markdown', reply_markup: keyboard });
 }
 
 function showCourses(chatId) {
     const message = `
-📚 *Our Courses*
+*Our Courses*
 
-1️⃣ *Financial Literacy 101* - Beginner
+1. *Financial Literacy 101* - Beginner
    Budgeting, saving, wealth planning
 
-2️⃣ *Introduction to Forex* - Beginner
+2. *Introduction to Forex* - Beginner
    Market basics, currency pairs, brokers
 
-3️⃣ *Technical Analysis* - Intermediate
+3. *Technical Analysis* - Intermediate
    Chart reading, indicators, patterns
 
-4️⃣ *Trading Psychology* - Advanced
+4. *Trading Psychology* - Advanced
    Emotions, risk management, discipline
 
-5️⃣ *Live Mentorship* - Premium
+5. *Live Mentorship* - Premium
    Trade with Ayarisi Amos directly
 
-✅ All include: Videos, PDFs, Assignments, Certificate
+All include: Videos, PDFs, Assignments, Certificate
     `;
     
     const keyboard = {
         inline_keyboard: [
-            [{ text: '💰 View Pricing', callback_data: 'view_pricing' }],
-            [{ text: '🏠 Menu', callback_data: 'main_menu' }]
+            [{ text: 'View Pricing', callback_data: 'view_pricing' }],
+            [{ text: 'Menu', callback_data: 'main_menu' }]
         ]
     };
     
@@ -614,22 +614,22 @@ function showCourses(chatId) {
 
 function showPricing(chatId) {
     const message = `
-💰 *Choose Your Plan*
+*Choose Your Plan*
 
-🆓 *Free Trial* - FREE (7 days)
-📊 *VIP Signals* - ₵200/month
-⭐ *Pro Trader* - ₵500/month
-♾️ *Lifetime* - ₵2,000 (one-time)
+*Free Trial* - FREE (7 days)
+*VIP Signals* - GHS 200/month
+*Pro Trader* - GHS 500/month
+*Lifetime* - GHS 2,000 (one-time)
 
 Select a plan below:
     `;
     
     const keyboard = {
         inline_keyboard: [
-            [{ text: '🆓 Free Trial', callback_data: 'pay_free-trial' }],
-            [{ text: '📊 VIP Signals ₵200', callback_data: 'pay_vip-signals' }, { text: '⭐ Pro ₵500', callback_data: 'pay_pro-trader-plan' }],
-            [{ text: '♾️ Lifetime ₵2,000', callback_data: 'pay_lifetime-access' }],
-            [{ text: '🏠 Menu', callback_data: 'main_menu' }]
+            [{ text: 'Free Trial', callback_data: 'pay_free-trial' }],
+            [{ text: 'VIP Signals GHS 200', callback_data: 'pay_vip-signals' }, { text: 'Pro GHS 500', callback_data: 'pay_pro-trader-plan' }],
+            [{ text: 'Lifetime GHS 2,000', callback_data: 'pay_lifetime-access' }],
+            [{ text: 'Menu', callback_data: 'main_menu' }]
         ]
     };
     
@@ -638,22 +638,22 @@ Select a plan below:
 
 function showSignals(chatId) {
     const message = `
-📊 *VIP Trading Signals*
+*VIP Trading Signals*
 
 Get daily & weekly forex signals from Ayarisi Amos!
 
-✅ Entry & exit points
-✅ Stop loss & take profit
-✅ Market analysis
-✅ Telegram alerts
+- Entry & exit points
+- Stop loss & take profit
+- Market analysis
+- Telegram alerts
 
-*Price:* ₵200/month
+*Price:* GHS 200/month
     `;
     
     const keyboard = {
         inline_keyboard: [
-            [{ text: '📊 Subscribe ₵200/mo', callback_data: 'pay_vip-signals' }],
-            [{ text: '🏠 Menu', callback_data: 'main_menu' }]
+            [{ text: 'Subscribe GHS 200/mo', callback_data: 'pay_vip-signals' }],
+            [{ text: 'Menu', callback_data: 'main_menu' }]
         ]
     };
     
@@ -664,25 +664,25 @@ function showMySubscriptions(chatId) {
     const subs = getActiveSubscriptions(chatId);
     
     if (subs.length === 0) {
-        const message = `📋 *Your Subscriptions*\n\nNo active subscriptions.\n\nStart with a free trial or choose a plan!`;
+        const message = `*Your Subscriptions*\n\nNo active subscriptions.\n\nStart with a free trial or choose a plan!`;
         const keyboard = {
             inline_keyboard: [
-                [{ text: '🆓 Free Trial', callback_data: 'pay_free-trial' }],
-                [{ text: '💰 View Plans', callback_data: 'view_pricing' }],
-                [{ text: '🏠 Menu', callback_data: 'main_menu' }]
+                [{ text: 'Free Trial', callback_data: 'pay_free-trial' }],
+                [{ text: 'View Plans', callback_data: 'view_pricing' }],
+                [{ text: 'Menu', callback_data: 'main_menu' }]
             ]
         };
         return bot.sendMessage(chatId, message, { parse_mode: 'Markdown', reply_markup: keyboard });
     }
     
-    let message = `📋 *Your Active Subscriptions*\n\n`;
+    let message = `*Your Active Subscriptions*\n\n`;
     const renewButtons = [];
     
     subs.forEach(sub => {
         const days = getDaysLeft(sub.expiryDate);
-        const status = sub.isLifetime ? '♾️ Lifetime' : 
-                      days > 7 ? '✅ Active' : 
-                      days > 0 ? '⚠️ Expiring' : '❌ Expired';
+        const status = sub.isLifetime ? 'Lifetime' : 
+                      days > 7 ? 'Active' : 
+                      days > 0 ? 'Expiring' : 'Expired';
         
         message += `*${sub.planName}*\n`;
         message += `Status: ${status}\n`;
@@ -691,7 +691,7 @@ function showMySubscriptions(chatId) {
             message += `Days left: ${Math.max(0, days)}\n`;
             
             if (days <= 7) {
-                renewButtons.push([{ text: `🔄 Renew ${sub.planName}`, callback_data: `pay_${sub.planId}` }]);
+                renewButtons.push([{ text: `Renew ${sub.planName}`, callback_data: `pay_${sub.planId}` }]);
             }
         }
         message += '\n';
@@ -700,8 +700,8 @@ function showMySubscriptions(chatId) {
     const keyboard = {
         inline_keyboard: [
             ...renewButtons,
-            [{ text: '💰 All Plans', callback_data: 'view_pricing' }],
-            [{ text: '🏠 Menu', callback_data: 'main_menu' }]
+            [{ text: 'All Plans', callback_data: 'view_pricing' }],
+            [{ text: 'Menu', callback_data: 'main_menu' }]
         ]
     };
     
@@ -710,9 +710,9 @@ function showMySubscriptions(chatId) {
 
 function showFAQs(chatId) {
     const buttons = FAQS.map((faq, i) => [{ text: `${i+1}. ${faq.question}`, callback_data: `faq_${i}` }]);
-    buttons.push([{ text: '🏠 Menu', callback_data: 'main_menu' }]);
+    buttons.push([{ text: 'Menu', callback_data: 'main_menu' }]);
     
-    bot.sendMessage(chatId, '❓ *FAQs - Select a question:*', { 
+    bot.sendMessage(chatId, '*FAQs - Select a question:*', { 
         parse_mode: 'Markdown', 
         reply_markup: { inline_keyboard: buttons } 
     });
@@ -720,29 +720,29 @@ function showFAQs(chatId) {
 
 function showFAQAnswer(chatId, index) {
     const faq = FAQS[index];
-    bot.sendMessage(chatId, `❓ *${faq.question}*\n\n${faq.answer}`, {
+    bot.sendMessage(chatId, `*${faq.question}*\n\n${faq.answer}`, {
         parse_mode: 'Markdown',
-        reply_markup: { inline_keyboard: [[{ text: '⬅️ Back', callback_data: 'faqs' }, { text: '🏠 Menu', callback_data: 'main_menu' }]] }
+        reply_markup: { inline_keyboard: [[{ text: 'Back', callback_data: 'faqs' }, { text: 'Menu', callback_data: 'main_menu' }]] }
     });
 }
 
 function showContact(chatId) {
     const message = `
-📞 *Contact Support*
+*Contact Support*
 
 *Ayarisi Amos* - Founder
 
-📧 Themosempire@gmail.com
-📱 +233 596 688 947
-📍 Navrongo, Ghana
+Email: Themosempire@gmail.com
+Phone: +233 596 688 947
+Location: Navrongo, Ghana
 
-💳 All payments via Paystack (MoMo/Card)
+All payments via Paystack (MoMo/Card)
     `;
     
     const keyboard = {
         inline_keyboard: [
-            [{ text: '💬 WhatsApp', url: 'https://wa.me/233596688947' }],
-            [{ text: '🏠 Menu', callback_data: 'main_menu' }]
+            [{ text: 'WhatsApp', url: 'https://wa.me/233596688947' }],
+            [{ text: 'Menu', callback_data: 'main_menu' }]
         ]
     };
     
@@ -755,62 +755,62 @@ function showContact(chatId) {
 
 async function initPayment(chatId, planId, user) {
     const plan = PLANS[planId];
-    if (!plan) return bot.sendMessage(chatId, '❌ Invalid plan');
+    if (!plan) return bot.sendMessage(chatId, 'Invalid plan');
     
     // Free trial
     if (plan.amount === 0) {
         // Check if already used
         if (db.subscriptions[chatId]?.some(s => s.planId === 'free-trial')) {
-            return bot.sendMessage(chatId, '❌ You already used your free trial!\n\nChoose a paid plan to continue.', {
-                reply_markup: { inline_keyboard: [[{ text: '💰 View Plans', callback_data: 'view_pricing' }]] }
+            return bot.sendMessage(chatId, 'You already used your free trial!\n\nChoose a paid plan to continue.', {
+                reply_markup: { inline_keyboard: [[{ text: 'View Plans', callback_data: 'view_pricing' }]] }
             });
         }
         
         const sub = addSubscription(chatId, planId, 'FREE_' + Date.now());
         
         const message = `
-🎉 *Free Trial Activated!*
+*Free Trial Activated!*
 
 Your 7-day trial is now active!
 Expires: ${formatDate(sub.expiryDate)}
 
-Join the group below! 👇
+Join the group below!
         `;
         
         bot.sendMessage(chatId, message, {
             parse_mode: 'Markdown',
             reply_markup: { inline_keyboard: [
-                [{ text: '🚀 Join Group', url: TELEGRAM_LINKS[planId] }],
-                [{ text: '💰 Upgrade', callback_data: 'view_pricing' }]
+                [{ text: 'Join Group', url: TELEGRAM_LINKS[planId] }],
+                [{ text: 'Upgrade', callback_data: 'view_pricing' }]
             ]}
         });
         
         // Notify admin
         if (ADMIN_TELEGRAM_ID) {
-            bot.sendMessage(ADMIN_TELEGRAM_ID, `🆓 Free trial: ${user.first_name} (@${user.username || 'N/A'}) - ID: \`${chatId}\``, { parse_mode: 'Markdown' });
+            bot.sendMessage(ADMIN_TELEGRAM_ID, `Free trial: ${user.first_name} (@${user.username || 'N/A'}) - ID: \`${chatId}\``, { parse_mode: 'Markdown' });
         }
         return;
     }
     
     // Check if already has lifetime
     if (planId === 'lifetime-access' && hasActivePlan(chatId, planId)) {
-        return bot.sendMessage(chatId, '✅ You already have Lifetime Access!');
+        return bot.sendMessage(chatId, 'You already have Lifetime Access!');
     }
     
     // Show payment options - Paystack only
     const message = `
-💳 *Pay for ${plan.name}*
+*Pay for ${plan.name}*
 
-*Amount:* ₵${plan.amount.toLocaleString()}
+*Amount:* GHS ${plan.amount.toLocaleString()}
 *Duration:* ${plan.duration}
 
-💡 Pay securely with Paystack (Mobile Money or Card)
+Pay securely with Paystack (Mobile Money or Card)
     `;
     
     const keyboard = {
         inline_keyboard: [
-            [{ text: '💳 Pay Now (Card/MoMo)', callback_data: `paystack_${planId}` }],
-            [{ text: '⬅️ Back', callback_data: 'view_pricing' }]
+            [{ text: 'Pay Now (Card/MoMo)', callback_data: `paystack_${planId}` }],
+            [{ text: 'Back', callback_data: 'view_pricing' }]
         ]
     };
     
@@ -830,7 +830,7 @@ async function generatePaystackLink(chatId, planId, user) {
         db.pendingPayments[chatId] = { planId, user };
         saveData();
         
-        bot.sendMessage(chatId, `📧 Please enter your email address to proceed with payment:`, {
+        bot.sendMessage(chatId, `Please enter your email address to proceed with payment:`, {
             reply_markup: { force_reply: true }
         });
         return;
@@ -881,9 +881,9 @@ async function createPaystackPayment(chatId, planId, email, user) {
             saveData();
             
             const message = `
-💳 *Pay for ${plan.name}*
+*Pay for ${plan.name}*
 
-*Amount:* ₵${plan.amount.toLocaleString()}
+*Amount:* GHS ${plan.amount.toLocaleString()}
 *Email:* ${email}
 
 Click the button below to pay securely with Paystack (Card or Mobile Money):
@@ -893,9 +893,9 @@ Click the button below to pay securely with Paystack (Card or Mobile Money):
                 parse_mode: 'Markdown',
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: '💳 Pay Now - ₵' + plan.amount.toLocaleString(), url: paymentUrl }],
-                        [{ text: '✅ I Have Paid', callback_data: `verify_${reference}` }],
-                        [{ text: '⬅️ Back', callback_data: 'view_pricing' }]
+                        [{ text: 'Pay Now - GHS ' + plan.amount.toLocaleString(), url: paymentUrl }],
+                        [{ text: 'I Have Paid', callback_data: `verify_${reference}` }],
+                        [{ text: 'Back', callback_data: 'view_pricing' }]
                     ]
                 }
             });
@@ -904,11 +904,10 @@ Click the button below to pay securely with Paystack (Card or Mobile Money):
         }
     } catch (error) {
         console.error('Paystack error:', error.response?.data || error.message);
-        bot.sendMessage(chatId, `❌ Error creating payment link. Please try manual payment or contact support.`, {
+        bot.sendMessage(chatId, `Error creating payment link. Please contact support.`, {
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: '📱 Manual Payment', callback_data: `manual_${planId}` }],
-                    [{ text: '📞 Contact Support', callback_data: 'contact' }]
+                    [{ text: 'Contact Support', callback_data: 'contact' }]
                 ]
             }
         });
@@ -944,20 +943,20 @@ async function verifyPaystackPayment(chatId, reference) {
             }
             return true;
         } else if (data.status === 'pending') {
-            bot.sendMessage(chatId, `⏳ Payment is still pending. Please complete the payment or wait a moment and try again.`, {
+            bot.sendMessage(chatId, `Payment is still pending. Please complete the payment or wait a moment and try again.`, {
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: '🔄 Check Again', callback_data: `verify_${reference}` }]
+                        [{ text: 'Check Again', callback_data: `verify_${reference}` }]
                     ]
                 }
             });
             return false;
         } else {
-            bot.sendMessage(chatId, `❌ Payment not found or failed. Please try again or contact support.`, {
+            bot.sendMessage(chatId, `Payment not found or failed. Please try again or contact support.`, {
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: '🔄 Try Again', callback_data: 'view_pricing' }],
-                        [{ text: '📞 Contact Support', callback_data: 'contact' }]
+                        [{ text: 'Try Again', callback_data: 'view_pricing' }],
+                        [{ text: 'Contact Support', callback_data: 'contact' }]
                     ]
                 }
             });
@@ -965,7 +964,7 @@ async function verifyPaystackPayment(chatId, reference) {
         }
     } catch (error) {
         console.error('Verify error:', error.response?.data || error.message);
-        bot.sendMessage(chatId, `❌ Error verifying payment. Please contact support with reference: \`${reference}\``, {
+        bot.sendMessage(chatId, `Error verifying payment. Please contact support with reference: \`${reference}\``, {
             parse_mode: 'Markdown'
         });
         return false;
@@ -991,24 +990,24 @@ async function processSuccessfulPayment(chatId, planId, reference, user) {
     
     // Send success message with group link
     const message = `
-🎉 *Payment Successful!*
+*Payment Successful!*
 
-✅ *${plan.name}* is now active!
+*${plan.name}* is now active!
 
-💰 Amount Paid: ₵${plan.amount.toLocaleString()}
-📅 Expires: ${plan.isLifetime ? 'Never (Lifetime)' : formatDate(sub.expiryDate)}
-🧾 Reference: \`${reference}\`
+Amount Paid: GHS ${plan.amount.toLocaleString()}
+Expires: ${plan.isLifetime ? 'Never (Lifetime)' : formatDate(sub.expiryDate)}
+Reference: \`${reference}\`
 
-Join your exclusive group now! 👇
+Join your exclusive group now!
     `;
     
     await bot.sendMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: {
             inline_keyboard: [
-                [{ text: '🚀 JOIN YOUR GROUP NOW', url: TELEGRAM_LINKS[planId] }],
-                [{ text: '📋 My Subscriptions', callback_data: 'my_subs' }],
-                [{ text: '🏠 Menu', callback_data: 'main_menu' }]
+                [{ text: 'JOIN YOUR GROUP NOW', url: TELEGRAM_LINKS[planId] }],
+                [{ text: 'My Subscriptions', callback_data: 'my_subs' }],
+                [{ text: 'Menu', callback_data: 'main_menu' }]
             ]
         }
     });
@@ -1016,12 +1015,12 @@ Join your exclusive group now! 👇
     // Notify admin
     if (ADMIN_TELEGRAM_ID) {
         bot.sendMessage(ADMIN_TELEGRAM_ID, `
-💰 *NEW PAYMENT!*
+*NEW PAYMENT!*
 
 User: ${user?.first_name || 'Unknown'} (@${user?.username || 'N/A'})
 ID: \`${chatId}\`
 Plan: ${plan.name}
-Amount: ₵${plan.amount.toLocaleString()}
+Amount: GHS ${plan.amount.toLocaleString()}
 Ref: \`${reference}\`
         `, { parse_mode: 'Markdown' });
     }
@@ -1031,7 +1030,7 @@ Ref: \`${reference}\`
 // EXPRESS SERVER & PAYSTACK WEBHOOK
 // ============================================
 
-app.get('/', (req, res) => res.send('Themosempire Fx Bot Running! 🚀'));
+app.get('/', (req, res) => res.send('Themos Empire Fx Bot Running!'));
 app.get('/health', (req, res) => res.json({ status: 'OK', time: new Date().toISOString() }));
 
 // Paystack Webhook - Auto process payments
@@ -1125,7 +1124,7 @@ app.get('/payment/callback', async (req, res) => {
                     <!DOCTYPE html>
                     <html>
                     <head>
-                        <title>Payment Successful - Themosempire Fx</title>
+                        <title>Payment Successful - Themos Empire Fx</title>
                         <meta name="viewport" content="width=device-width, initial-scale=1">
                         <style>
                             body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f0f0f0; }
@@ -1138,7 +1137,7 @@ app.get('/payment/callback', async (req, res) => {
                     </head>
                     <body>
                         <div class="card">
-                            <div class="success">✅</div>
+                            <div class="success">SUCCESS</div>
                             <h1>Payment Successful!</h1>
                             <p>Your subscription has been activated.</p>
                             <p>Return to Telegram to get your group access link!</p>
@@ -1153,7 +1152,7 @@ app.get('/payment/callback', async (req, res) => {
                     <html>
                     <head><title>Payment Pending</title></head>
                     <body style="font-family: Arial; text-align: center; padding: 50px;">
-                        <h1>⏳ Payment Pending</h1>
+                        <h1>Payment Pending</h1>
                         <p>Your payment is being processed. Please check Telegram for confirmation.</p>
                     </body>
                     </html>
@@ -1169,12 +1168,12 @@ app.get('/payment/callback', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🌐 Server running on port ${PORT}`);
-    console.log('✅ Bot ready!');
-    console.log(`👑 Admin ID: ${ADMIN_TELEGRAM_ID}`);
+    console.log(`Server running on port ${PORT}`);
+    console.log('Bot ready!');
+    console.log(`Admin ID: ${ADMIN_TELEGRAM_ID}`);
     if (WEBHOOK_URL) {
-        console.log(`🔗 Webhook URL: ${WEBHOOK_URL}/webhook/paystack`);
+        console.log(`Webhook URL: ${WEBHOOK_URL}/webhook/paystack`);
     } else {
-        console.log('⚠️ Set WEBHOOK_URL in .env for automatic payment processing');
+        console.log('Set WEBHOOK_URL in .env for automatic payment processing');
     }
 });

@@ -1,7 +1,7 @@
 {
-  "name": "themosempire-fx-bot",
+  "name": "themos-empire-fx-bot",
   "version": "1.0.0",
-  "description": "Telegram bot for Themosempire Fx - Financial Literacy & Forex Trading Academy",
+  "description": "Telegram bot for Themos Empire Fx - Financial Literacy & Forex Trading Academy",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
@@ -13,9 +13,9 @@
     "forex",
     "trading",
     "paystack",
-    "themosempire"
+    "themos-empire"
   ],
-  "author": "Themosempire Fx",
+  "author": "Themos Empire Fx",
   "license": "ISC",
   "dependencies": {
     "node-telegram-bot-api": "^0.64.0",
